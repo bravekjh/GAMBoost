@@ -1,0 +1,8 @@
+import(splines)
+export(GAMBoost,getGAMBoostSelected,cv.GAMBoost,optimGAMBoostPenalty)
+
+S3method(print,GAMBoost)
+S3method(summary,GAMBoost)
+S3method(plot,GAMBoost)
+S3method(predict,GAMBoost)
+

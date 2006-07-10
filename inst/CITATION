@@ -1,0 +1,23 @@
+citHeader("2006 for likelihood based boosting and fitting of generalized addtive
+models by boosting; 2005 for generalized linear models as a special case")
+
+citEntry(
+ entry="Unpublished",
+ title="Boosting ridge regression",
+ author="G. Tutz and H. Binder",
+ note="Discussion Paper 418, SFB 386, Ludwig-Maximilians-University Munich",
+ year="2005",
+ textVersion="Tutz, G. and Binder, H. (2005) Boosting ridge regression.
+Discussion Paper 418, SFB 386, Ludwig-Maximilians-University Munich."
+)
+
+citEntry(
+ entry="Article",
+ title="Generalized additive modelling with implicit variable selection by likelihood based boosting",
+ journal="Biometrics",
+ volume="to appear",
+ year="2006",
+ author="G. Tutz and H. Binder",
+ textVersion="Tutz, G. and Binder, H. (2006) Generalized additive modelling with implicit variable
+selection by likelihood based boosting. Biometrics. To appear."
+)
