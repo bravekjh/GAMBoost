@@ -20,7 +20,7 @@ GAMBoost(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
 \item{xmin, xmax}{optional vectors of length \code{p} specifying the lower and upper bound for the range of the smooth functions to be fitted.}
 \item{penalty}{penalty value for the update of an individual smooth function in each boosting step.}
 \item{bdeg, pdiff}{degree of the B-spline basis to be used for fitting smooth functions and difference of the
-coefficient estimates to which the penalty should be applied.}
+coefficient estimates to which the penalty should be applied. When \code{pdiff} is a vector, the penalties corresponding to single vector elements are combined to enforce several types of smoothness simultaneously.}
 \item{x.linear}{optional \code{n * q} matrix of covariates with linear influence.}
 \item{standardize.linear}{logical value indicating whether linear covariates should be standardized for estimation.}
 \item{penalty.linear}{penalty value (scalar or vector of length q) for update of individual linear components in each boosting step. If this is set to \code{0} the covariates in \code{x.linear} enter the model as mandatory covariates, which are updated together with the intercept term in each step.}

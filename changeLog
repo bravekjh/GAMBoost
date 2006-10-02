@@ -1,3 +1,19 @@
+0.9-3
+
+-   fixed use of weights in cv.GAMBoost 
+-   added flexible p value cutoff for prediction and calculation of prediction error
+    in cv.GAMBoost
+
+0.9-2
+
+-   fixed a problem where predict.GAMBoost would not work with only linear predictors
+    (thanks to Ravi Varadhan for pointing this out)
+-   implemented penalty of difference '0' as absolute penalty on coefficients
+-   'pdiff, specifying the penalty difference can be a vector now, thus allowing for enforcement 
+    of several types of smoothness simultanoeusly'
+-   fixed bug that prevented criterion from being save for AIC-optimGAMBoostPenalty
+-   optimGAMBoostPenalty now also stores the selection criterion in the GAMBoost object returned
+
 
 0.9-1
 

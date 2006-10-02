@@ -7,11 +7,11 @@ Performs a K-fold cross-validation for \code{\link{GAMBoost}} in search for the 
 \synopsis{
 cv.GAMBoost(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),weights=rep(1,length(y)),
             calc.hat=TRUE,calc.se=TRUE,trace=FALSE,
-            K=10,type="loglik",just.criterion=FALSE,\dots) 
+            K=10,type="loglik",pred.cutoff=0.5,just.criterion=FALSE,\dots) 
 }
 \usage{
 cv.GAMBoost(x=NULL,y,x.linear=NULL,maxstepno=500,
-            K=10,type="loglik",
+            K=10,type="loglik",pred.cutoff=0.5,
             just.criterion=FALSE,trace=FALSE,\dots) 
 }
 \arguments{
@@ -20,7 +20,8 @@ cv.GAMBoost(x=NULL,y,x.linear=NULL,maxstepno=500,
 \item{x.linear}{optional \code{n * q} matrix of covariates with linear influence.}
 \item{maxstepno}{maximum number of boosting steps to evaluate.}
 \item{K}{number of folds to be used for cross-validation.}
-\item{type}{goodness-of-fit criterion: likelihood (\code{"loglik"}), error rate for binary response data (\code{"error"}) or squared error for others (\code{"L2"})}
+\item{type, pred.cutoff}{goodness-of-fit criterion: likelihood (\code{"loglik"}), error rate for binary response data (\code{"error"}) or squared error for others (\code{"L2"}).
+For binary response data and the \code{"error"} criterion \code{pred.cutoff} specifies the p value cutoff for prediction of class 1 vs 0.}
 \item{just.criterion}{logical value indicating wether a list with the goodness-of-fit information should be returned or a \code{GAMBoost} fit with the optimal number of steps.}
 \item{trace}{logical value indicating whether information on progress should be printed.}
 \item{\dots}{miscellaneous parameters for the calls to \code{\link{GAMBoost}}}

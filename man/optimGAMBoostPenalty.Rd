@@ -40,7 +40,9 @@ The penalty parameter(s) for \code{\link{GAMBoost}} have to be chosen only very 
 Penalty optimization based on AIC should work fine most of the time, but for a large number of covariates (e.g. 500 with 100 observations) problems arise and (more costly) cross-validation should be employed.  
 }
 \value{
-\code{GAMBoost} fit with the optimal penalty or just the optimal penalty value itself.  
+\code{GAMBoost} fit with the optimal penalty (with an additional component \code{optimGAMBoost.criterion}
+giving the values of the criterion (AIC or cross-validation) corresponding to the final penalty) 
+or just the optimal penalty value itself.  
 }
 \author{
 Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely the original Fortran implementation employed

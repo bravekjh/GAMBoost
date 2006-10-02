@@ -336,9 +336,20 @@ basis.expansion <- function(x,n,xmin=NULL,xmax=NULL,bdeg=2,ndx=20,pdiff=1) {
             predictor$knots[length(predictor$knots) - predictor$bdeg] <- predictor$xr
             predictor$expansion <- spline.des(predictor$knots, x[,i], predictor$bdeg + 1, rep(0,nrow(x)))$design
             predictor$expansion <- predictor$expansion %*% rbind(diag(ncol(predictor$expansion)-1),rep(-1,ncol(predictor$expansion)-1))
-        
-            k <- diff(rbind(diag(ncol(predictor$expansion)),rep(-1,ncol(predictor$expansion))),,pdiff)
-            predictor$penalty <- t(k)%*%k
+
+            predictor$penalty <- matrix(0,ncol(predictor$expansion),ncol(predictor$expansion))
+            
+            if (length(pdiff) > 0) {
+                for (j in 1:length(pdiff)) {
+                    if (pdiff[j] > 0) {
+                        k <- diff(rbind(diag(ncol(predictor$expansion)),rep(-1,ncol(predictor$expansion))),,pdiff[j])
+                    } else {
+                        k <- rbind(diag(ncol(predictor$expansion)),rep(-1,ncol(predictor$expansion)))
+                    }
+                    
+                    predictor$penalty <- predictor$penalty + t(k)%*%k
+                }
+            }
         
             result[[length(result)+1]] <- predictor
         }
@@ -493,9 +504,9 @@ predict.GAMBoost <- function(object,newdata=NULL,newdata.linear=NULL,at.step=NUL
         at.step <- at.step + 1
     }
     
-    n <- ifelse(is.null(newdata),object$n,nrow(newdata))
+    n <- ifelse(is.null(newdata),ifelse(is.null(newdata.linear),object$n,nrow(newdata.linear)),nrow(newdata))
     
-    if (is.null(newdata) && type != "terms") {
+    if (is.null(newdata) && is.null(newdata.linear) && type != "terms") {
         eta <- object$eta[,at.step]
     } else {
         eta <- matrix(rep(object$beta[[1]][at.step,],n),n,length(at.step),byrow=TRUE)
@@ -634,7 +645,7 @@ null.in.bands <- function(object,select=NULL,at.step=NULL,phi=1) {
 
 cv.GAMBoost <- function(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),weights=rep(1,length(y)),
                         calc.hat=TRUE,calc.se=TRUE,trace=FALSE,
-                        K=10,type="loglik",just.criterion=FALSE,...) 
+                        K=10,type="loglik",pred.cutoff=0.5,just.criterion=FALSE,...) 
 {
     #   consistency checks
     
@@ -661,8 +672,8 @@ cv.GAMBoost <- function(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),w
             fit.quality[i,] <- apply(family$dev.resids(matrix(rep(y[omit],maxstepno),length(omit),maxstepno),
                                                         prediction,matrix(rep(weights[omit],maxstepno),length(omit),maxstepno)),2,mean)
         } else {
-            if (family$family == "binomial") prediction <- ifelse(prediction > 0.5,1,0)
-            fit.quality[i,] <- apply((matrix(rep(y[omit],maxstepno),length(omit),maxstepno) - prediction)^2*weights,2,mean)
+            if (family$family == "binomial") prediction <- ifelse(prediction > pred.cutoff,1,0)
+            fit.quality[i,] <- apply((matrix(rep(y[omit],maxstepno),length(omit),maxstepno) - prediction)^2*weights[omit],2,mean)
         }
     }
 
@@ -699,6 +710,8 @@ optimGAMBoostPenalty <- function(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=2
     step.up <- 1.2
     step.down <- 0.5
     
+    actual.criterion <- NULL
+    
     for (i in 1:iter.max) {
         if (trace) cat("iteration",i,": evaluating penalty",actual.penalty,"\n")
         
@@ -714,12 +727,14 @@ optimGAMBoostPenalty <- function(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=2
             actual.res <- GAMBoost(x=x,y,x.linear=x.linear,stepno=maxstepno,penalty=smoothness.penalty,penalty.linear=linear.penalty,
                                    calc.hat=actual.calc.hat,
                                    calc.se=actual.calc.se,trace=trace,...)
-            actual.min <- which.min(actual.res$AIC)
+            actual.criterion <- actual.res$AIC
+            actual.min <- which.min(actual.criterion)
         } 
         if (method == "CVmin") {
             actual.res <- cv.GAMBoost(x=x,y,x.linear=x.linear,maxstepno=maxstepno,penalty=smoothness.penalty,penalty.linear=linear.penalty,
                                       just.criterion=TRUE,
                                       calc.hat=actual.calc.hat,calc.se=actual.calc.se,trace=trace,...)
+            actual.criterion <- actual.res$criterion
             actual.min <- actual.res$selected
         }
         
@@ -753,6 +768,8 @@ optimGAMBoostPenalty <- function(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=2
         actual.res <- GAMBoost(x=x,y,x.linear=x.linear,stepno=maxstepno,penalty=smoothness.penalty,penalty.linear=linear.penalty,
                                calc.hat=calc.hat,calc.se=calc.se,trace=trace,...)
     }
+
+    actual.res$optimGAMBoost.criterion <- actual.criterion 
     
     return(actual.res)
 }
