@@ -1,13 +1,13 @@
 \name{optimGAMBoostPenalty}
 \alias{optimGAMBoostPenalty}
-\title{Coarse line search for adequate penalty parameter}
+\title{Coarse line search for adequate GAMBoost penalty parameter}
 \description{
 This routine helps in finding a penalty value that leads to an ``optimal'' number of boosting steps for GAMBoost (determined by AIC or cross-validation) that is not too small/in a specified range.  
 }
 \synopsis{
-optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=200,start.penalty=500,method="AICmin",
+optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=200,start.penalty=500,method=c("AICmin","CVmin"),
                      penalty=100,penalty.linear=100,
-                     just.penalty=FALSE,iter.max=10,upper.margin=0.05,trace=TRUE,                               
+                     just.penalty=FALSE,iter.max=10,upper.margin=0.05,trace=TRUE,parallel=FALSE,                               
                      calc.hat=TRUE,calc.se=TRUE,
                      which.penalty=ifelse(!is.null(x),"smoothness","linear"),\dots)
 }
@@ -17,7 +17,7 @@ optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,
                      which.penalty=ifelse(!is.null(x),"smoothness","linear"),
                      start.penalty=500,penalty=100,penalty.linear=100,
                      iter.max=10,upper.margin=0.05,
-                     just.penalty=FALSE,trace=TRUE,\dots)
+                     just.penalty=FALSE,trace=TRUE,parallel=FALSE,\dots)
 }
 \arguments{
 \item{x}{\code{n * p} matrix of covariates with potentially non-linear influence. If this is not given (and argument \code{x.linear} is employed), a generalized linear model is fitted.}
@@ -32,6 +32,8 @@ optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,
 \item{iter.max}{maximum number of search iterations.}
 \item{upper.margin}{specifies the fraction of \code{maxstepno} which is used as an upper margin in which an AIC/cross-validation minimum is not taken to be one. (Necessary because of random fluctuations of these criteria).}
 \item{trace}{logical value indicating whether information on progress should be printed.}
+\item{parallel}{logical value indicating whether evaluation of cross-validation folds should be performed in parallel
+on a compute cluster, when using \code{method="CVmin"}. This requires library \code{snowfall}.}
 \item{\dots}{miscellaneous parameters for \code{\link{GAMBoost}}.}
 }
 \details{
@@ -49,7 +51,7 @@ Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely t
 for Tutz and Binder (2006). 
 }
 \references{
-Tutz, G. and Binder, H. (2006) Generalized additive modelling with implicit variable selection by likelihood based boosting. \emph{Biometrics}. To appear.
+Tutz, G. and Binder, H. (2006) Generalized additive modelling with implicit variable selection by likelihood based boosting. \emph{Biometrics}, \bold{51}, 961--971.
 }
 \seealso{
 \code{\link{GAMBoost}}

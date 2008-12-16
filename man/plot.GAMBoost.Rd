@@ -5,10 +5,10 @@
 Generates plots for the smooth components from a \code{\link{GAMBoost}} fit at a specific boosting step.
 }
 \synopsis{
-plot.GAMBoost(x,select=NULL,at.step=NULL,add=FALSE,phi=1,ylim=NULL,xlab=NULL,ylab=NULL,\dots)
+\method{plot}{GAMBoost}(x,select=NULL,at.step=NULL,add=FALSE,phi=1,ylim=NULL,xlab=NULL,ylab=NULL,\dots)
 }
 \usage{
-plot.GAMBoost(x,select=NULL,at.step=NULL,add=FALSE,phi=1,\dots)
+\method{plot}{GAMBoost}(x,select=NULL,at.step=NULL,add=FALSE,phi=1,\dots)
 }
 \arguments{
 \item{x}{fitted GAMBoost object from a \code{\link{GAMBoost}} call.}

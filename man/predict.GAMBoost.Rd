@@ -5,8 +5,8 @@
 Obtains predictions at specified boosting steps from a GAMBoost object fitted by \code{\link{GAMBoost}}.  
 }
 \usage{
-predict.GAMBoost(object,newdata=NULL,newdata.linear=NULL,
-                 at.step=NULL,type="link",\dots)
+\method{predict}{GAMBoost}(object,newdata=NULL,newdata.linear=NULL,
+                 at.step=NULL,type=c("link","response","terms"),\dots)
 }
 \arguments{
 \item{object}{fitted GAMBoost object from a \code{\link{GAMBoost}} call.}

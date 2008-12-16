@@ -1,8 +1,11 @@
+useDynLib(GAMBoost,pre_sum,calc_dev_binary)
+
 import(splines)
-export(GAMBoost,getGAMBoostSelected,cv.GAMBoost,optimGAMBoostPenalty)
+export(GAMBoost,GLMBoost,getGAMBoostSelected,cv.GAMBoost,cv.GLMBoost,optimGAMBoostPenalty,optimGLMBoostPenalty)
 
 S3method(print,GAMBoost)
 S3method(summary,GAMBoost)
 S3method(plot,GAMBoost)
 S3method(predict,GAMBoost)
+S3method(predict,GLMBoost)
 

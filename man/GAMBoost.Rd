@@ -12,7 +12,7 @@ GAMBoost(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
          x.linear=NULL,standardize.linear=TRUE,penalty.linear=0,
          weights=rep(1,length(y)),stepno=500,family=binomial(),
          sparse.boost=FALSE,sparse.weight=1,calc.hat=TRUE,calc.se=TRUE,
-         AIC.type="corrected",trace=FALSE) 
+         AIC.type=c("corrected","classical"),trace=FALSE) 
 }
 \arguments{
 \item{x}{\code{n * p} matrix of covariates with potentially non-linear influence. If this is not given (and argument \code{x.linear} is employed), a generalized linear model is fitted.}
@@ -32,7 +32,7 @@ coefficient estimates to which the penalty should be applied. When \code{pdiff} 
 \item{calc.hat}{logical value indicating whether the hat matrix should be computed for each boosting step. If set to \code{FALSE} no degrees of freedom and therefore e.g. no AIC will be available. On the other hand fitting will be faster (especially for a large number of observations).}
 \item{calc.se}{logical value indicating whether confidence bands should be calculated. Switch this of for faster fitting.}
 \item{AIC.type}{type of model selection criterion to be calculated (and also to be used for sparse boosting if applicable): in the Gaussian case \code{"classical"} gives AIC and \code{"corrected"} results in corrected AIC (Hurvich, Simonoff and Tsai, 1998); for all other response families standard AIC is used.}
-\item{trace}{logical value indicating whether progress in estimation should be indicated by printing the index  of the covariate updated (\code{1}, \dots , \code{p} for smooth components and \code{p+1}, \dots ,\code{p-q}} for parametric components) in the current boosting step.}
+\item{trace}{logical value indicating whether progress in estimation should be indicated by printing the index  of the covariate updated (\code{1}, \dots , \code{p} for smooth components and \code{p+1}, \dots ,\code{p-q} for parametric components) in the current boosting step.}
 }
 \details{
 The idea of likelihood based boosting (Tutz and Binder, 2006) is most easily understood for models with a Gaussian response.  There it results in repeated fitting of residuals (This idea is then transferred to the generalized case).  For obtaining an additive model GAMBoost uses a large number of boosting steps where in each step a penalized B-spline (of degree \code{bdeg}) (Eilers and Marx, 1996) is fitted to one covariate, the response being the residuals from the last step.  The covariate to be updated is selected by deviance (or in case of sparse boosting by some model selection criterion).  The B-spline coefficient estimates in each step are fitted under the constraint of a large penalty on their first (or higher order) differences. So in each step only a small adjustment is made.  Summing over all steps for each covariate a smooth function estimate is obtained. When no basis expansion is used, i.e. just coefficients of covariates are updated, (generalized) linear models are obtained.  
@@ -69,9 +69,9 @@ Hurvich, C. M., Simonoff, J. S. and Tsai, C. L. (1998). Smoothing parameter sele
 
 Eilers, P. H. C. and Marx, B. D. (1996) Flexible smoothing with B-splines and penalties. \emph{Statistical Science}, \bold{11}(2), 89--121.
 
-Tutz, G. and Binder, H. (2006) Generalized additive modelling with implicit variable selection by likelihood based boosting. \emph{Biometrics}. To appear.
+Tutz, G. and Binder, H. (2007) Boosting ridge regression. \emph{Computational Statistics \& Data Analysis}, \bold{51}(12), 6044--6059.
 
-Tutz, G. and Binder, H. (2005) Boosting ridge regression. Discussion Paper 418, SFB 386, Ludwig-Maximilians-University Munich.
+Tutz, G. and Binder, H. (2006) Generalized additive modelling with implicit variable selection by likelihood based boosting. \emph{Biometrics}, \bold{51}, 961--971.
 }
 \seealso{
 \code{\link{getGAMBoostSelected}}, \code{\link{plot.GAMBoost}}, \code{\link{predict.GAMBoost}}, \code{\link{optimGAMBoostPenalty}}.
@@ -137,7 +137,7 @@ gb4 <- GAMBoost(x=NULL,y=y,x.linear=x.linear,penalty.linear=100,
                 stepno=100,trace=TRUE,family=binomial())
 
 #   Compare with generalized additive model fit
-plot(gb3$AIC,type="l"); lines(1:100,gb4$AIC,lty=2)
+plot(0:100,gb3$AIC,type="l",xlab="stepno",ylab="AIC"); lines(0:100,gb4$AIC,lty=2)
 
 }
 \keyword{models} \keyword{smooth} \keyword{regression}

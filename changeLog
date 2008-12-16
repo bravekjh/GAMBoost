@@ -1,3 +1,23 @@
+1.0
+
+-   added wrappers (GLMBoost and predict.GLMBoost) for conveniently fitting generalized linear
+    models, i.e., without smooth components
+-   fixed "zero boosting steps" corner case: 
+    -   GAMBoost/GLMBoost can now fit with "stepno=0", the trace, deviance, AIC, and BIC
+        result vectors have an additional element for boosting step zero, and the elements
+        of 'beta'/'beta.linear' for the latter are no longer equal to zero, but contain the
+        results from one estimation step for the mandatory covariates, i.e., in the simplest
+        case, an intercept-only model is fitted at zero boosting steps.        
+    -   cv.GAMBoost/cv.GLMBoost can return an optimum at zero steps, and alos the 'criterion'
+        and 'se' elements of the results have an additonal element for boosting step zero
+-   implemented parallel evaluation on a compute cluster for cross-validation
+
+0.9-4
+
+-   general performance improvements, especially for componentwise ridge boosting, i.e. boosting
+    for covariates with linear influence, and there espacially for binary response models
+-   fixed bug in formula for traditional AIC in the Gaussian response case
+
 0.9-3
 
 -   fixed use of weights in cv.GAMBoost 
