@@ -9,7 +9,10 @@ together with confidence bands and approximate degrees of freedom.
 }
 \usage{
 GAMBoost(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
-         x.linear=NULL,standardize.linear=TRUE,penalty.linear=0,
+         x.linear=NULL,standardize.linear=TRUE,
+         penalty.linear=0,stepsize.factor.linear=1,
+         sf.scheme=c("sigmoid","linear"),pendistmat.linear=NULL,
+         connected.index.linear=NULL,
          weights=rep(1,length(y)),stepno=500,family=binomial(),
          sparse.boost=FALSE,sparse.weight=1,calc.hat=TRUE,calc.se=TRUE,
          AIC.type=c("corrected","classical"),trace=FALSE) 
@@ -24,6 +27,10 @@ coefficient estimates to which the penalty should be applied. When \code{pdiff} 
 \item{x.linear}{optional \code{n * q} matrix of covariates with linear influence.}
 \item{standardize.linear}{logical value indicating whether linear covariates should be standardized for estimation.}
 \item{penalty.linear}{penalty value (scalar or vector of length q) for update of individual linear components in each boosting step. If this is set to \code{0} the covariates in \code{x.linear} enter the model as mandatory covariates, which are updated together with the intercept term in each step.}
+\item{stepsize.factor.linear}{determines the step-size modification factor by which the natural step size of boosting steps for the linear covariates should be changed after a covariate has been selected in a boosting step. The default (value \code{1}) implies constant penalties, for a value < 1 the penalty for a covariate is increased after it has been selected in a boosting step, and for a value > 1 the penalty it is decreased. If \code{pendistmat} is given, penalty updates are only performed for covariates that have at least one connection to another covariate.}
+\item{sf.scheme}{scheme for changing step sizes (via \code{stepsize.factor}). \code{"linear"} corresponds to the scheme described in Binder and Schumacher (2009), \code{"sigmoid"} employs a sigmoid shape.}
+\item{pendistmat.linear}{connection matrix with entries ranging between 0 and 1, with entry \code{(i,j)} indicating the certainty of the connection between covariates \code{i} and \code{j}. According to this information penalty changes due to \code{stepsize.factor.linear} < 1 are propagated, i.e., if entry \code{(i,j)} is non-zero, the penalty for covariate \code{j} is decreased after it has been increased for covariate \code{i}, after it has been selected in a boosting step. This matrix either has to have dimension \code{q * q} or the indicices of the \code{q.connected} connected linear covariates have to be given in \code{connected.index.linear}, in which case the matrix has to have dimension \code{q.connected * q.connected}.}
+\item{connected.index.linear}{indices of the \code{q.connected} connected linear covariates, for which \code{pendistmat.linear} provides the connection information for distributing changes in penalties. If \code{NULL}, and a connection matrix is given, all covariates are assumed to be connected.}
 \item{weights}{an optional vector of weights to be used in the fitting process.}
 \item{stepno}{number of boosting steps (\code{m}).}
 \item{family}{a description of the error distribution to be used in the model. This can be a character string naming a family function, a family function or the result of a call to a family function. (See \code{\link{family}} for details of family functions.) Note that \code{GAMBoost} supports only canonical link functions and no scale parameter estimation, so \code{gaussian()}, \code{binomial()} and \code{poisson()} are the most plausible candidates.}
@@ -38,6 +45,8 @@ coefficient estimates to which the penalty should be applied. When \code{pdiff} 
 The idea of likelihood based boosting (Tutz and Binder, 2006) is most easily understood for models with a Gaussian response.  There it results in repeated fitting of residuals (This idea is then transferred to the generalized case).  For obtaining an additive model GAMBoost uses a large number of boosting steps where in each step a penalized B-spline (of degree \code{bdeg}) (Eilers and Marx, 1996) is fitted to one covariate, the response being the residuals from the last step.  The covariate to be updated is selected by deviance (or in case of sparse boosting by some model selection criterion).  The B-spline coefficient estimates in each step are fitted under the constraint of a large penalty on their first (or higher order) differences. So in each step only a small adjustment is made.  Summing over all steps for each covariate a smooth function estimate is obtained. When no basis expansion is used, i.e. just coefficients of covariates are updated, (generalized) linear models are obtained.  
 
 The main parameter of the algorithm is the number of boosting steps, given that the penalty is chosen large enough (If too small the minimum AIC will occur for a very early boosting step; see \code{\link{optimGAMBoostPenalty}}).  When there is a large number of covariates with potentially non-linear effect, having a single parameter (with adaptive smoothness assignment to single components performed automatically by the algorithm) is a huge advantage compared to approaches, where a smoothing parameter has to be selected for each single component. The biggest advantage over conventional methods for fitting generalized additive models (e.g. \code{mgcv:gam} or \code{gam:gam}) will therefore be obtained for a large number of covariates compared to the number of observations (e.g. 10 covariates with only 100 observations).  In addition GAMBoost performs well compared to other approaches when there is a small signal-to-noise ratio and/or a response (e.g. binary) with a small amount of information.
+
+If a group of correlated covariates has influence on the response, e.g. genes from the same pathway, componentwise boosting will often result in a non-zero estimate for only one member of this group. To avoid this, information on the connection between covariates with linear influence can be provided in \code{pendistmat.linear}. If then, in addition, a penalty updating scheme with \code{stepsize.factor.linear} < 1 is chosen, connected covariates with linear influence are more likely to be chosen in future boosting steps, if a directly connected covariate has been chosen in an earlier boosting step (see Binder and Schumacher, 2008b).
 
 Note that the degrees of freedom (and based on these AIC and BIC) are just approximations, which are completely valid for example only when the order and the indices of the components updated is fixed.  This leads to problems especially when there is a very large number of covariates (e.g. 10000 covariates with only 100 observations).  Then it might be better (but also slower) to rely on cross validation (see \code{\link{cv.GAMBoost}}) for selection of the number of boosting steps.  
 
@@ -65,6 +74,10 @@ Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely t
 for Tutz and Binder (2006). 
 }
 \references{
+Binder, H. and Schumacher, M. (2009). Incorporating pathway information into boosting estimation of high-dimensional risk prediction models. BMC Bioinformatics. 10:18.
+
+Binder, H. and Schumacher, M. (2008). Incorporating pathway information into boosting estimation of high-dimensional risk prediction models. Manuscript.
+
 Hurvich, C. M., Simonoff, J. S. and Tsai, C. L. (1998). Smoothing parameter selection in nonparametric regression using and improved Akaike information criterion. Journal of the Royal Statistical Society B, \bold{60}(2), 271--293.
 
 Eilers, P. H. C. and Marx, B. D. (1996) Flexible smoothing with B-splines and penalties. \emph{Statistical Science}, \bold{11}(2), 89--121.
@@ -138,6 +151,27 @@ gb4 <- GAMBoost(x=NULL,y=y,x.linear=x.linear,penalty.linear=100,
 
 #   Compare with generalized additive model fit
 plot(0:100,gb3$AIC,type="l",xlab="stepno",ylab="AIC"); lines(0:100,gb4$AIC,lty=2)
+
+
+##   Fit a generalized linear model with penalty modification
+##   after every boosting step, with penalty changes being
+##   redistrbuted via a connection matrix
+
+pendistmat <- matrix(0,10,10)
+#    Covariates 1 and 3 are connected
+pendistmat[1,3] <- pendistmat[3,1] <- 1
+
+gb5 <- GAMBoost(x=NULL,y=y,x.linear=x.linear,penalty.linear=100,
+                stepsize.factor.linear=0.9,pendistmat.linear=pendistmat,
+                stepno=100,trace=TRUE,family=binomial())
+
+#   or alternatively
+
+gb5 <- GAMBoost(x=NULL,y=y,x.linear=x.linear,penalty.linear=100,
+                stepsize.factor.linear=0.9,
+                pendistmat.linear=pendistmat[c(1,3),c(1,3)],
+                connected.index.linear=c(1,3),
+                stepno=100,trace=TRUE,family=binomial())
 
 }
 \keyword{models} \keyword{smooth} \keyword{regression}

@@ -6,13 +6,14 @@ Performs a K-fold cross-validation for \code{\link{GAMBoost}} in search for the 
 }
 \synopsis{
 cv.GAMBoost(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),weights=rep(1,length(y)),
-            calc.hat=TRUE,calc.se=TRUE,trace=FALSE,parallel=FALSE,upload.x=TRUE,
+            calc.hat=TRUE,calc.se=TRUE,trace=FALSE,parallel=FALSE,upload.x=TRUE,folds=NULL,
             K=10,type=c("loglik","error","L2"),pred.cutoff=0.5,just.criterion=FALSE,\dots) 
 }
 \usage{
 cv.GAMBoost(x=NULL,y,x.linear=NULL,maxstepno=500,
             K=10,type=c("loglik","error","L2"),pred.cutoff=0.5,
-            just.criterion=FALSE,trace=FALSE,parallel=FALSE,upload.x=TRUE,\dots) 
+            just.criterion=FALSE,trace=FALSE,parallel=FALSE,
+            upload.x=TRUE,folds=NULL,\dots) 
 }
 \arguments{
 \item{x}{\code{n * p} matrix of covariates with potentially non-linear influence. If this is not given (and argument \code{x.linear} is employed), a generalized linear model is fitted.}
@@ -28,6 +29,7 @@ For binary response data and the \code{"error"} criterion \code{pred.cutoff} spe
 on a compute cluster. This requires library \code{snowfall}.}
 \item{upload.x}{logical value indicating whether \code{x} and \code{x.linear} should/have to be uploaded to the
 compute cluster for parallel computation. Uploading these only once (using \code{sfExport(x,x.linear)} from library \code{snowfall}) can save much time for large data sets.}
+\item{folds}{if not \code{NULL}, this has to be a list of length \code{K}, each element being a vector of indices of fold elements. Useful for employing the same folds for repeated runs.}
 \item{\dots}{miscellaneous parameters for the calls to \code{\link{GAMBoost}}}
 }
 \value{
@@ -35,6 +37,7 @@ compute cluster for parallel computation. Uploading these only once (using \code
 \item{criterion}{vector with goodness-of fit criterion for boosting step \code{1} , \dots , \code{maxstep}}
 \item{se}{vector with standard error estimates for the goodness-of-fit criterion in each boosting step.}
 \item{selected}{index of the optimal boosting step.}
+\item{folds}{list of length \code{K}, where the elements are vectors of the indices of observations in the respective folds.}
 }
 \author{
 Harald Binder \email{binderh@fdm.uni-freiburg.de}

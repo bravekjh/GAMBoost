@@ -1,5 +1,7 @@
 GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
                      x.linear=NULL,standardize.linear=TRUE,penalty.linear=0,
+                     stepsize.factor.linear=1,sf.scheme=c("sigmoid","linear"),
+                     pendistmat.linear=NULL,connected.index.linear=NULL,
                      weights=rep(1,length(y)),stepno=500,family=binomial(),
                      sparse.boost=FALSE,sparse.weight=1,calc.hat=TRUE,calc.se=TRUE,
                      AIC.type=c("corrected","classical"),trace=FALSE) 
@@ -8,6 +10,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
     #   check parameters for consistency and transform them to the format expected
     #
 
+    sf.scheme <- match.arg(sf.scheme)
     AIC.type <- match.arg(AIC.type)
      
     if (sparse.boost) calc.hat <- TRUE
@@ -57,6 +60,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
             fstruct$x.linear <- scale(x.linear)
             fstruct$mean.linear <- attr(fstruct$x.linear,"scaled:center")
             fstruct$sd.linear <- attr(fstruct$x.linear,"scaled:scale")
+            ml.fraction <- rep(0,ncol(x.linear))
         } else {
             fstruct$mean.linear <- rep(0,ncol(x.linear))
             fstruct$sd.linear <- rep(1,ncol(x.linear))
@@ -66,12 +70,32 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
         fstruct$beta.linear <- matrix(0,fstruct$stepno+1,ncol(fstruct$x.linear))   
         
         if (length(penalty.linear) < ncol(x.linear)) penalty.linear <- rep(penalty.linear[1],ncol(x.linear))
+        if (length(stepsize.factor.linear) < ncol(x.linear)) stepsize.factor.linear <- rep(stepsize.factor.linear[1],ncol(x.linear))
     } else {
         fstruct$x.linear <- NULL
         fstruct$beta.linear <- NULL
     }
     
     fstruct$penalty.linear <- penalty.linear
+    linear.is.penalized <- penalty.linear != 0
+
+    if (!is.null(pendistmat.linear) && is.null(connected.index.linear)) {
+        unpen.index <- which(!linear.is.penalized)
+        
+        if (ncol(pendistmat.linear) == ncol(x.linear) - length(unpen.index)) {
+            if (length(unpen.index) > 0) {
+                connected.index.linear <- (1:ncol(x.linear))[-unpen.index]
+            } else {
+                connected.index.linear <- 1:ncol(x.linear)
+            }
+        } else {
+            stop("'connected.index.linear' is missing and cannot be guessed")
+        }
+    }
+    
+    if (!is.null(x.linear) && !is.null(connected.index.linear)) {
+        penpos <- match(1:(ncol(x.linear)),connected.index.linear)
+    }
     
     
     #   
@@ -82,14 +106,14 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
     
     if (!is.null(fstruct$x.linear)) {
 
-        componentwise.no <- sum(fstruct$penalty.linear != 0)
+        componentwise.no <- sum(linear.is.penalized)
 
         if (componentwise.no > 0) {
             if (family$family != "binomial" || sparse.boost) {
-                t.x.linear <- t(fstruct$x.linear[,fstruct$penalty.linear != 0,drop=FALSE])
-            } else {
-                x.linear.double.vec <- as.double(as.vector(fstruct$x.linear[,fstruct$penalty.linear != 0,drop=FALSE]))
+                t.x.linear <- t(fstruct$x.linear[,linear.is.penalized,drop=FALSE])
             }
+
+            x.linear.double.vec <- as.double(as.vector(fstruct$x.linear[,linear.is.penalized,drop=FALSE]))
         }
     }
 
@@ -105,17 +129,16 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
         if (actual.step != 1) {     #   intercept/mandatory updates do not have to be performed in
                                     #   step 1, because this has aleady been done in step 0
         
-            if (!is.null(fstruct$x.linear) && sum(fstruct$penalty.linear == 0) > 0) {
+            if (!is.null(fstruct$x.linear) && sum(!linear.is.penalized) > 0) {
                 #   update unpenalized linear covariates together with intercept 
             
-                unpen.x <- cbind(rep(1,fstruct$n),fstruct$x.linear[,fstruct$penalty.linear == 0])
-                unpen.pre <- solve(t((unpen.x*intercept.D)*weights) %*% unpen.x) %*% t(unpen.x)
-                                     
+                unpen.x <- cbind(rep(1,fstruct$n),fstruct$x.linear[,!linear.is.penalized])
+                unpen.pre <- solve(t((unpen.x*intercept.D)*weights) %*% unpen.x) %*% t(unpen.x)                                     
                 unpen.beta.delta <- drop(unpen.pre %*% (weights*(y - fstruct$family$linkinv(fstruct$eta[,max(actual.step,1)]))))
                 unpen.eta.delta <- unpen.x %*% unpen.beta.delta
 
                 fstruct$beta[[1]][actual.step+1,] <- fstruct$beta[[1]][max(actual.step,1),] + unpen.beta.delta[1]
-                fstruct$beta.linear[actual.step+1,fstruct$penalty.linear == 0] <- fstruct$beta.linear[max(actual.step,1),fstruct$penalty.linear == 0] + unpen.beta.delta[2:length(unpen.beta.delta)]
+                fstruct$beta.linear[actual.step+1,!linear.is.penalized] <- fstruct$beta.linear[max(actual.step,1),!linear.is.penalized] + unpen.beta.delta[2:length(unpen.beta.delta)]
                 fstruct$eta[,actual.step+1] <- fstruct$eta[,max(actual.step,1)] + unpen.x %*% unpen.beta.delta
             
                 if (calc.hat) {
@@ -245,7 +268,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
                               as.double(D),           
                               as.double(weights),
                               double(length(y)),
-                              as.double(fstruct$penalty.linear[fstruct$penalty.linear != 0]),      
+                              as.double(fstruct$penalty.linear[linear.is.penalized]),      
                               double(componentwise.no),           
                               double(componentwise.no),           
                               res = double(componentwise.no),DUP=FALSE)$res                
@@ -258,7 +281,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
                               as.double(weights),           
                               res = double(componentwise.no),DUP=FALSE)$res
                 
-                pre.mult <- (1/(pre.sum + fstruct$penalty.linear[fstruct$penalty.linear != 0]))  
+                pre.mult <- (1/(pre.sum + fstruct$penalty.linear[linear.is.penalized]))  
                 beta.delta.vec <- drop(t.x.linear %*% (weights*(y - actual.mu))) * pre.mult
  
                 dev.vec <- apply(matrix(
@@ -271,7 +294,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
             crit.vec <- dev.vec
 
             if (sparse.boost) {
-                pen.lin.index <- (1:length(fstruct$penalty.linear))[fstruct$penalty.linear != 0]
+                pen.lin.index <- (1:length(fstruct$penalty.linear))[linear.is.penalized]
                 
                 for (i in 1:length(pen.lin.index)) {
                     candidate.pre.hat <- (fstruct$x.linear[,pen.lin.index[i],drop=FALSE] %*% (t.x.linear[i,,drop=FALSE]*pre.mult[i])) * D
@@ -290,7 +313,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
                 }
             }
                                 
-            best.candidate.linear <- (1:length(fstruct$penalty.linear))[fstruct$penalty.linear != 0][which.min(crit.vec)]
+            best.candidate.linear <- (1:length(fstruct$penalty.linear))[linear.is.penalized][which.min(crit.vec)]
             
             if (best.criterion == -1 || min(crit.vec) < best.criterion) {
                 best.candidate <- best.candidate.linear + length(predictors)
@@ -302,8 +325,69 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
             }
         }
 
+        # print(fstruct$penalty.linear[1:100])
+
         #cat("updating",best.candidate-1,"with deviance",best.deviance,"\n")
         if (trace) cat(best.candidate-1," ")
+
+        #
+        #   perform penalty updates for linear predictors
+        #
+
+        if (best.candidate > length(predictors) && fstruct$penalty.linear[best.candidate - length(predictors)] != 0) {
+
+            min.index <- best.candidate - length(predictors)
+            actual.stepsize.factor <- stepsize.factor.linear[min.index]
+
+            if (actual.stepsize.factor != 1 && ml.fraction[min.index] < 1) {
+                if (is.null(pendistmat.linear) || 
+                    (min.index %in% connected.index.linear && any(pendistmat.linear[penpos[min.index],] != 0))) 
+                {
+                    #   update ML fraction
+                    I.min <- sum(fstruct$x.linear[,min.index]^2*D)
+                    nu <- I.min / (I.min + fstruct$penalty.linear[min.index])
+                    ml.fraction[min.index] <- ml.fraction[min.index] + (1-ml.fraction[min.index])*nu
+
+                    new.D <- fstruct$family$mu.eta(drop(best.eta))
+                    I.min <- sum(fstruct$x.linear[,min.index]^2*new.D)
+
+
+                    old.penalty <- fstruct$penalty.linear[min.index]
+                    if (sf.scheme == "sigmoid") {
+                        new.nu <- max(1-(1-(I.min/(I.min+old.penalty)))^actual.stepsize.factor,0.00001)  # prevent penalty -> Inf
+                        fstruct$penalty.linear[min.index] <- (1/new.nu - 1)*I.min
+                    } else {
+                        fstruct$penalty.linear[min.index] <- (1/actual.stepsize.factor - 1)*I.min + old.penalty/actual.stepsize.factor
+                    }
+                    if (fstruct$penalty.linear[min.index] < 0) fstruct$penalty.linear[min.index] <- 0
+
+                    if (trace) cat("\npenalty update for ",min.index," (mlf: ",round(ml.fraction[min.index],3),"): ",old.penalty," -> ",fstruct$penalty.linear[min.index],"\n",sep="")
+
+                    #   redistribute change in penalty
+                    if (!is.null(pendistmat.linear)) {
+                        if (trace) cat("connected:\n")
+                        connected <- connected.index.linear[which(pendistmat.linear[penpos[min.index],] != 0)]
+
+                        if (trace) print(connected)
+                        for (actual.target in connected) {
+                            if (ml.fraction[actual.target] < 1) {
+                                if (trace) cat(actual.target," (mlf: ",round(ml.fraction[actual.target],3),"): ",fstruct$penalty.linear[actual.target]," -> ",sep="")
+
+                                I.target <- sum(fstruct$x.linear[,actual.target]^2*new.D)
+
+                                new.target.penalty <- pendistmat.linear[penpos[min.index],penpos[actual.target]]*(1 - ml.fraction[actual.target])*I.target/
+                                                          ((1-actual.stepsize.factor)*pendistmat.linear[penpos[min.index],penpos[actual.target]]*(1-ml.fraction[min.index])*I.min/(I.min+old.penalty) +
+                                                           (1-ml.fraction[actual.target])*I.target/(I.target+fstruct$penalty.linear[actual.target])) - 
+                                                          I.target
+
+                                if (new.target.penalty > 0) fstruct$penalty.linear[actual.target] <- new.target.penalty
+                                if (trace) cat(fstruct$penalty.linear[actual.target],"\n")
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         fstruct$selected <- c(fstruct$selected,best.candidate-1)
         fstruct$eta[,actual.step+1] <- drop(best.eta)
@@ -319,7 +403,7 @@ GAMBoost <- function(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
         }
         
         if (!is.null(fstruct$x.linear) && componentwise.no > 0) {
-            fstruct$beta.linear[actual.step+1,fstruct$penalty.linear != 0] <- fstruct$beta.linear[actual.step,fstruct$penalty.linear != 0]
+            fstruct$beta.linear[actual.step+1,linear.is.penalized] <- fstruct$beta.linear[actual.step,linear.is.penalized]
             if (best.candidate > length(predictors)) fstruct$beta.linear[actual.step+1,best.candidate - length(predictors)] <- fstruct$beta.linear[actual.step+1,best.candidate - length(predictors)] + best.beta.delta
         }
         
@@ -708,19 +792,25 @@ null.in.bands <- function(object,select=NULL,at.step=NULL,phi=1) {
 }
 
 cv.GAMBoost <- function(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),weights=rep(1,length(y)),
-                        calc.hat=TRUE,calc.se=TRUE,trace=FALSE,parallel=FALSE,upload.x=TRUE,
+                        calc.hat=TRUE,calc.se=TRUE,trace=FALSE,parallel=FALSE,upload.x=TRUE,folds=NULL,
                         K=10,type=c("loglik","error","L2"),pred.cutoff=0.5,just.criterion=FALSE,...) 
 {
     type <- match.arg(type)
 
     #   consistency checks
     
+    if (!is.null(folds) && length(folds) != K) stop("'folds' has to be of length 'K'")
+
     if (is.null(x) && is.null(x.linear)) {
         cat("Neither non-parametric components (x) nor parametric components (x.linear) given. Abort.\n")
         return(NULL)
     }
 
-    all.folds <- split(sample(seq(length(y))), rep(1:K,length=length(y)))
+    if (is.null(folds)) {
+        all.folds <- split(sample(seq(length(y))), rep(1:K,length=length(y)))
+    } else {
+        all.folds <- folds
+    }
 
     fit.quality <- matrix(NA,K,maxstepno+1)
 
@@ -766,7 +856,7 @@ cv.GAMBoost <- function(x=NULL,y,x.linear=NULL,maxstepno=500,family=binomial(),w
     best.fit <- which.min(fit.quality) - 1
     if (trace) cat("best fit at",best.fit,"\n")
 
-    if (just.criterion) return(list(criterion=fit.quality,se=fit.quality.se,selected=best.fit))
+    if (just.criterion) return(list(criterion=fit.quality,se=fit.quality.se,selected=best.fit,folds=all.folds))
     
     if (trace) cat("final fit:\n")
     return(GAMBoost(x=x,y=y,x.linear=x.linear,stepno=best.fit,family=family,weights=weights,
