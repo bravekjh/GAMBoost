@@ -10,12 +10,13 @@ together with confidence bands and approximate degrees of freedom.
 \usage{
 GAMBoost(x=NULL,y,xmin=NULL,xmax=NULL,penalty=100,bdeg=2,pdiff=1,
          x.linear=NULL,standardize.linear=TRUE,
-         penalty.linear=0,stepsize.factor.linear=1,
+         penalty.linear=0,subset=NULL,
+         criterion=c("deviance","score"),stepsize.factor.linear=1,
          sf.scheme=c("sigmoid","linear"),pendistmat.linear=NULL,
          connected.index.linear=NULL,
          weights=rep(1,length(y)),stepno=500,family=binomial(),
          sparse.boost=FALSE,sparse.weight=1,calc.hat=TRUE,calc.se=TRUE,
-         AIC.type=c("corrected","classical"),trace=FALSE) 
+         AIC.type=c("corrected","classical"),return.score=TRUE,trace=FALSE) 
 }
 \arguments{
 \item{x}{\code{n * p} matrix of covariates with potentially non-linear influence. If this is not given (and argument \code{x.linear} is employed), a generalized linear model is fitted.}
@@ -27,6 +28,8 @@ coefficient estimates to which the penalty should be applied. When \code{pdiff} 
 \item{x.linear}{optional \code{n * q} matrix of covariates with linear influence.}
 \item{standardize.linear}{logical value indicating whether linear covariates should be standardized for estimation.}
 \item{penalty.linear}{penalty value (scalar or vector of length q) for update of individual linear components in each boosting step. If this is set to \code{0} the covariates in \code{x.linear} enter the model as mandatory covariates, which are updated together with the intercept term in each step.}
+\item{subset}{an optional vector specifying a subset of observations to be used in the fitting process.}
+\item{criterion}{Indicates the criterion to be employed for selecting the best update in each boosting step for the linear components. \code{deviance} corresponds to the original, deviance-based selection suggested for componentwise boosting. With \code{score}, a score statistic is employed. The latter is faster and corresponds to the approach employed for Cox regression in package \code{CoxBoost}.}
 \item{stepsize.factor.linear}{determines the step-size modification factor by which the natural step size of boosting steps for the linear covariates should be changed after a covariate has been selected in a boosting step. The default (value \code{1}) implies constant penalties, for a value < 1 the penalty for a covariate is increased after it has been selected in a boosting step, and for a value > 1 the penalty it is decreased. If \code{pendistmat} is given, penalty updates are only performed for covariates that have at least one connection to another covariate.}
 \item{sf.scheme}{scheme for changing step sizes (via \code{stepsize.factor}). \code{"linear"} corresponds to the scheme described in Binder and Schumacher (2009), \code{"sigmoid"} employs a sigmoid shape.}
 \item{pendistmat.linear}{connection matrix with entries ranging between 0 and 1, with entry \code{(i,j)} indicating the certainty of the connection between covariates \code{i} and \code{j}. According to this information penalty changes due to \code{stepsize.factor.linear} < 1 are propagated, i.e., if entry \code{(i,j)} is non-zero, the penalty for covariate \code{j} is decreased after it has been increased for covariate \code{i}, after it has been selected in a boosting step. This matrix either has to have dimension \code{q * q} or the indicices of the \code{q.connected} connected linear covariates have to be given in \code{connected.index.linear}, in which case the matrix has to have dimension \code{q.connected * q.connected}.}
@@ -39,6 +42,7 @@ coefficient estimates to which the penalty should be applied. When \code{pdiff} 
 \item{calc.hat}{logical value indicating whether the hat matrix should be computed for each boosting step. If set to \code{FALSE} no degrees of freedom and therefore e.g. no AIC will be available. On the other hand fitting will be faster (especially for a large number of observations).}
 \item{calc.se}{logical value indicating whether confidence bands should be calculated. Switch this of for faster fitting.}
 \item{AIC.type}{type of model selection criterion to be calculated (and also to be used for sparse boosting if applicable): in the Gaussian case \code{"classical"} gives AIC and \code{"corrected"} results in corrected AIC (Hurvich, Simonoff and Tsai, 1998); for all other response families standard AIC is used.}
+\item{return.score}{logical value indicating whether the value of the score statistic, as evaluated in each boosting step for every covariate (only for binary response models, for linear components, if \code{criterion="score"}), should be returned. The corresponding element \code{scoremat} can become very large (and needs much memory) when the number of covariates and boosting steps is large.}
 \item{trace}{logical value indicating whether progress in estimation should be indicated by printing the index  of the covariate updated (\code{1}, \dots , \code{p} for smooth components and \code{p+1}, \dots ,\code{p-q} for parametric components) in the current boosting step.}
 }
 \details{
@@ -55,7 +59,7 @@ Note that the \code{gamboost} routine in the R package \code{mboost} implements 
 \value{
 \code{GAMBoost} returns an object of class \code{GAMBoost}.  \code{GAMBoost} objects can be examined by print, summary, and plot.  \code{\link{getGAMBoostSelected}} can be used on them to identify selected/significant covariates.  
 
-\item{x, x.linear, n}{original covariate values and number of observations.}
+\item{x, n, p.linear}{original values for covariates with non-linear effect, number of observations, and number of covariates with linear effect.}
 \item{penalty, penalty.linear}{penalties used in updating smooth and linear components.}
 \item{stepno}{number of boosting steps.}
 \item{family}{response family.}
@@ -64,7 +68,8 @@ Note that the \code{gamboost} routine in the R package \code{mboost} implements 
 \item{selected}{vector of length \code{m} given the index of the covariate updated in each boosting step (\code{1-p} for smooth components and \code{(p+1)}, ... , \code{(p-q)} for parametric components).}
 \item{beta}{list of length \code{p+1}, each element being a matrix with \code{m+1} rows giving the estimated coefficients for the intercept term (\code{beta[[1]]}) and the smooth terms (\code{beta[[2]]}, ... , \code{beta[[p+1]]}).}
 \item{beta.linear}{\code{m * q} matrix containing the coefficient estimates for the (standardized) linear covariates.}
-\item{mean.liner, sd.linear}{vector of mean values and standard deviations used for standardizing the linear covariates.}
+\item{scoremat}{\code{m * q} matrix containing the value of the score statistic for each of the optional covariates before each boosting step, if selection has been performed by the score statistic (\code{criterion="score"}) and a binary response model has been employed.}
+\item{mean.linear, sd.linear}{vector of mean values and standard deviations used for standardizing the linear covariates.}
 \item{hatmatrix}{hat matrix at the final boosting step.}
 \item{eta}{\code{n * (m+1)} matrix with predicted value (at predictor level) for each boosting step.}
 \item{predictors}{list of length \code{p+1} containing information (as a list) on basis expansions for the smooth model components (\code{predictors[[2]]}, ... , \code{predictors[[p+1]]}).}

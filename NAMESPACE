@@ -2,7 +2,7 @@ useDynLib(GAMBoost,pre_sum,calc_dev_binary)
 
 import(splines)
 export(GAMBoost,GLMBoost,getGAMBoostSelected,cv.GAMBoost,cv.GLMBoost,optimGAMBoostPenalty,optimGLMBoostPenalty,
-       optimStepSizeFactor)
+       optimStepSizeFactor,estimPVal)
 
 S3method(print,GAMBoost)
 S3method(summary,GAMBoost)

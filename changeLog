@@ -1,3 +1,19 @@
+1.2
+
+-   added function 'estimPVal' for permutation-based p-value estimation
+
+
+1.1-1
+
+-   removed storage of covariate values in return object
+-   implemented use of score function as selection criterion for linear components
+-   added support for 'multicore' package for cross-validation
+-   reduced memory consumption, speed-up for large number of linear components
+-   added an option for fitting on subsets of observations
+-   The coefficient matrix 'beta.linear' is for the linear components is
+    now stored as a sparse matrix, employing package 'Matrix'
+
+
 1.1
 
 -   implemented penalty modification factors and penalty change distribution
