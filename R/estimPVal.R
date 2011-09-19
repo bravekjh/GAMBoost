@@ -18,6 +18,8 @@ estimPVal <- function(object,x,y,permute.n=10,per.covariate=FALSE,parallel=FALSE
     penalty <- c(object$penalty.linear,object$penalty.linear[pen.index])
     family <- object$family
 
+    if (stepno == 0) return(rep(NA,length(pen.index)))
+
     eval.permute <- function(actual.permute,...) {
         if (trace) cat("permutation",actual.permute,"\n")
 
@@ -25,10 +27,11 @@ estimPVal <- function(object,x,y,permute.n=10,per.covariate=FALSE,parallel=FALSE
         
         permute.res <- GAMBoost(y=y,x.linear=actual.x,penalty.linear=penalty,family=family,
                                 standardize.linear=FALSE,stepno=stepno,
+                                calc.hat=FALSE,calc.se=FALSE,
                                 criterion="score",return.score=TRUE,trace=FALSE,...)
     
-        actual.score <- colMeans(permute.res$scoremat[,1:length(pen.index)])
-        null.score <- colMeans(permute.res$scoremat[,(length(pen.index)+1):ncol(permute.res$scoremat)])
+        actual.score <- colMeans(permute.res$scoremat[,1:length(pen.index),drop=FALSE])
+        null.score <- colMeans(permute.res$scoremat[,(length(pen.index)+1):ncol(permute.res$scoremat),drop=FALSE])
 
         if (per.covariate) {
             return(actual.score <= null.score)

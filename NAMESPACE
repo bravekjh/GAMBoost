@@ -1,4 +1,5 @@
-useDynLib(GAMBoost,pre_sum,calc_dev_binary)
+useDynLib(GAMBoost,pre_sum_index,calc_dev_binary_index,get_min_score_dev_binary_index,get_min_score_dev_gaussian_index,
+          get_min_score_dev_general_index)
 
 import(splines)
 export(GAMBoost,GLMBoost,getGAMBoostSelected,cv.GAMBoost,cv.GLMBoost,optimGAMBoostPenalty,optimGLMBoostPenalty,
