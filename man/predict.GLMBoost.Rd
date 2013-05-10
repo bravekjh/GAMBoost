@@ -16,7 +16,7 @@ Convienience wrapper for \code{\link{predict.GAMBoost}}, for obtaining predictio
 Value returned by \code{\link{predict.GAMBoost}} (see documentation there).
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \examples{
 ##  Generate some data 

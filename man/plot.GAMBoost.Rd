@@ -4,11 +4,8 @@
 \description{
 Generates plots for the smooth components from a \code{\link{GAMBoost}} fit at a specific boosting step.
 }
-\synopsis{
-\method{plot}{GAMBoost}(x,select=NULL,at.step=NULL,add=FALSE,phi=1,ylim=NULL,xlab=NULL,ylab=NULL,\dots)
-}
 \usage{
-\method{plot}{GAMBoost}(x,select=NULL,at.step=NULL,add=FALSE,phi=1,\dots)
+\method{plot}{GAMBoost}(x,select=NULL,at.step=NULL,add=FALSE,phi=1,ylim=NULL,xlab=NULL,ylab=NULL,\dots)
 }
 \arguments{
 \item{x}{fitted GAMBoost object from a \code{\link{GAMBoost}} call.}
@@ -16,13 +13,14 @@ Generates plots for the smooth components from a \code{\link{GAMBoost}} fit at a
 \item{at.step}{boosting step from which the estimates for the smooth functions should be evaluated. If not given, the final boosting step is used.}
 \item{add}{logical value indicating whether the plot(s) should be added to the current plot.}
 \item{phi}{scale parameter for the confidence bands.}
+\item{ylim,xlab,ylab}{standard plotting parameters for plotting range and axis labels. Automatically set if \code{NULL}.}
 \item{\dots}{miscellaneous plotting parameters given to the low level plotting routine.}
 }
 \value{
 A plot is produced for the specified smooth components in the \code{GAMBoost} fit.  Pointwise confidence bands are plotted when the standard error information has been calculated (option \code{calc.se=TRUE} in the call to \code{GAMBoost}).  
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \examples{
 ##  Generate some data 

@@ -21,7 +21,7 @@ For \code{type="link"} and \code{type="response"} a vector of length \code{n.new
 For \code{type="terms"} a \code{n.new * p+1} matrix with contributions of the smooth components to the predictor is returned.  
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \examples{
 ##  Generate some data 

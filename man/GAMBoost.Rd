@@ -75,7 +75,7 @@ Note that the \code{gamboost} routine in the R package \code{mboost} implements 
 \item{predictors}{list of length \code{p+1} containing information (as a list) on basis expansions for the smooth model components (\code{predictors[[2]]}, ... , \code{predictors[[p+1]]}).}
 }
 \author{
-Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely the original Fortran implementation employed
+Written by Harald Binder \email{binderh@uni-mainz.de}, matching closely the original Fortran implementation employed
 for Tutz and Binder (2006). 
 }
 \references{

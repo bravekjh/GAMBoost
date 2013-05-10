@@ -21,7 +21,7 @@ cv.GLMBoost(x,y,penalty=length(y),just.criterion=TRUE,...)
 \item{selected}{index of the optimal boosting step.}
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \seealso{
 \code{\link{GLMBoost}}, \code{\link{cv.GAMBoost}}, \code{\link{GAMBoost}}

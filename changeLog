@@ -1,3 +1,9 @@
+1.2-3
+
+-   added support for package 'parallel' (removing support for 'multicore' and older R versions)
+-   removed '\synopis' from documentation, resulting in some 'hidden' arguments
+    to be visible now
+
 1.2-2
 
 -   fixed bug that prevented subsetting (and cv.GAMBoost) from working

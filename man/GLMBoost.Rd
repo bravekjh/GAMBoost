@@ -18,7 +18,7 @@ GLMBoost(x,y,penalty=length(y),standardize=TRUE,\dots)
 Object returned by call to \code{\link{GAMBoost}} (see documentation there), with additional class \code{GLMBoost}.
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \references{
 Tutz, G. and Binder, H. (2007) Boosting ridge regression. \emph{Computational Statistics \& Data Analysis}, \bold{51}(12), 6044--6059.

@@ -8,7 +8,7 @@ optimStepSizeFactor <- function(x=NULL,y,x.linear=NULL,direction=c("down","up","
             parallel <- FALSE
             warning("package 'snowfall' not found, i.e., parallelization cannot be performed")
         } else {
-            sfExport("x","x.linear")            
+            snowfall::sfExport("x","x.linear")            
         }
     }
 

@@ -24,7 +24,7 @@ giving the values of the criterion (AIC or cross-validation) corresponding to th
 or just the optimal penalty value itself.  
 }
 \author{
-Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely the original Fortran implementation employed
+Written by Harald Binder \email{binderh@uni-mainz.de}, matching closely the original Fortran implementation employed
 for Tutz and Binder (2006). 
 }
 \references{

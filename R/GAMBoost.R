@@ -989,19 +989,19 @@ cv.GAMBoost <- function(x=NULL,y,x.linear=NULL,subset=NULL,maxstepno=500,family=
             warning("package 'snowfall' not found, i.e., parallelization cannot be performed")
             fit.quality <- matrix(unlist(lapply(1:length(all.folds),eval.fold,...)),nrow=length(all.folds),byrow=TRUE)        
         } else {
-            sfLibrary(GAMBoost)
+            snowfall::sfLibrary(GAMBoost)
             if (upload.x) {
-                sfExport("y","x","x.linear","weights","subset.index","family","maxstepno","trace","type","all.folds")
+                snowfall::sfExport("y","x","x.linear","weights","subset.index","family","maxstepno","trace","type","all.folds")
             } else {
-                sfExport("y","weights","subset.index","family","maxstepno","trace","type","all.folds")            
+                snowfall::sfExport("y","weights","subset.index","family","maxstepno","trace","type","all.folds")            
             }
-            fit.quality <- matrix(unlist(sfClusterApplyLB(1:length(all.folds),eval.fold,...)),nrow=length(all.folds),byrow=TRUE)                
+            fit.quality <- matrix(unlist(snowfall::sfClusterApplyLB(1:length(all.folds),eval.fold,...)),nrow=length(all.folds),byrow=TRUE)                
         }
     }
     
     if (!eval.success & multicore) {
-        if (!require(multicore)) {
-            warning("package 'multicore' not found, i.e., parallelization cannot be performed using this package")
+        if (!require(parallel)) {
+            warning("package 'parallel' not found, i.e., parallelization cannot be performed using this package")
         } else {
             if (multicore > 1) {
                 fit.quality <- matrix(unlist(mclapply(1:length(all.folds),eval.fold,mc.preschedule=FALSE,mc.cores=multicore,...)),nrow=length(all.folds),byrow=TRUE)
@@ -1058,7 +1058,7 @@ optimGAMBoostPenalty <- function(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=2
             parallel <- FALSE
             warning("package 'snowfall' not found, i.e., parallelization cannot be performed")
         } else {
-            sfExport("x","x.linear")            
+            snowfall::sfExport("x","x.linear")            
         }
     }
     

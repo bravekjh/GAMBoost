@@ -46,16 +46,16 @@ estimPVal <- function(object,x,y,permute.n=10,per.covariate=FALSE,parallel=FALSE
         if (!require(snowfall)) {
             warning("package 'snowfall' not found, i.e., parallelization cannot be performed")
         } else {
-            sfLibrary(GAMBoost)
-            sfExport("y","x","family","unpen.index","pen.index","stepno","penalty","trace","permute.index")
-            permute.mat <- matrix(unlist(sfClusterApplyLB(1:permute.n,eval.permute,...)),length(pen.index),permute.n)
+            snowfall::sfLibrary(GAMBoost)
+            snowfall::sfExport("y","x","family","unpen.index","pen.index","stepno","penalty","trace","permute.index")
+            permute.mat <- matrix(unlist(snowfall::sfClusterApplyLB(1:permute.n,eval.permute,...)),length(pen.index),permute.n)
             done.parallel <- TRUE            
         }
     } 
 
     if (!done.parallel & multicore) {
-        if (!require(multicore)) {
-            warning("package 'multicore' not found, i.e., parallelization cannot be performed using this package")
+        if (!require(parallel)) {
+            warning("package 'parallel' not found, i.e., parallelization cannot be performed using this package")
         } else {
             if (multicore > 1) {
                 permute.mat <- matrix(unlist(mclapply(1:permute.n,eval.permute,mc.preschedule=FALSE,mc.cores=multicore,...)),length(pen.index),permute.n)

@@ -25,7 +25,7 @@ As p-value estimates are based on permutations, random numbers are drawn for det
 Vector with p-value estimates, one value for each optional covariate with linear effect specificed in the original call to \code{\link{GAMBoost}} or \code{\link{GLMBoost}}.
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \references{
 Binder, H., Porzelius, C. and Schumacher, M. (2009). Rank-based p-values for sparse high-dimensional risk prediction models fitted by componentwise boosting. FDM-Preprint Nr. 101, University of Freiburg, Germany.

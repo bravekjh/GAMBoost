@@ -17,7 +17,7 @@ getGAMBoostSelected(object,at.step=NULL)
 \item{parametric}{indices of parametric components which received any update up to the given step.}
 }
 \author{
-Harald Binder \email{binderh@fdm.uni-freiburg.de}
+Harald Binder \email{binderh@uni-mainz.de}
 }
 \seealso{
 \code{\link{GAMBoost}}, \code{\link{plot.GAMBoost}}

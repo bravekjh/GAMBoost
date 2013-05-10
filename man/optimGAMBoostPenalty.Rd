@@ -4,36 +4,30 @@
 \description{
 This routine helps in finding a penalty value that leads to an ``optimal'' number of boosting steps for GAMBoost (determined by AIC or cross-validation) that is not too small/in a specified range.  
 }
-\synopsis{
-optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,minstepno=50,maxstepno=200,start.penalty=500,method=c("AICmin","CVmin"),
-                     penalty=100,penalty.linear=100,
-                     just.penalty=FALSE,iter.max=10,upper.margin=0.05,trace=TRUE,parallel=FALSE,                               
-                     calc.hat=TRUE,calc.se=TRUE,
-                     which.penalty=ifelse(!is.null(x),"smoothness","linear"),\dots)
-}
 \usage{
 optimGAMBoostPenalty(x=NULL,y,x.linear=NULL,
-                     minstepno=50,maxstepno=200,method=c("AICmin","CVmin"),
-                     which.penalty=ifelse(!is.null(x),"smoothness","linear"),
-                     start.penalty=500,penalty=100,penalty.linear=100,
-                     iter.max=10,upper.margin=0.05,
-                     just.penalty=FALSE,trace=TRUE,parallel=FALSE,\dots)
+                     minstepno=50,maxstepno=200,start.penalty=500,
+                     method=c("AICmin","CVmin"),penalty=100,penalty.linear=100,
+                     just.penalty=FALSE,iter.max=10,upper.margin=0.05,
+                     trace=TRUE,parallel=FALSE,calc.hat=TRUE,calc.se=TRUE,
+                     which.penalty=ifelse(!is.null(x),"smoothness","linear"),\dots)
 }
 \arguments{
 \item{x}{\code{n * p} matrix of covariates with potentially non-linear influence. If this is not given (and argument \code{x.linear} is employed), a generalized linear model is fitted.}
 \item{y}{response vector of length \code{n}.}
 \item{x.linear}{optional \code{n * q} matrix of covariates with linear influence.}
 \item{minstepno, maxstepno}{range of boosting steps in which the ``optimal'' number of boosting steps is wanted to be.}
-\item{method}{determines how the optimal number of boosting steps corresponding to a fixed penalty is evaluated. With \code{"AICmin"} the AIC is used and with \code{"CVmin"} cross-validation is used as a criterion.}
-\item{which.penalty}{indicates whether the penalty for the smooth components (value \code{"smoothness"}) or for the linear components (\code{"linear"}) should be optimized.}
 \item{start.penalty}{start value for the search for the appropriate penalty.}
-\item{penalty, penalty.linear}{penalty values for the smooth or parametric components, respectively for the type of components for which the penalty is not optimized.}
+\item{method}{determines how the optimal number of boosting steps corresponding to a fixed penalty is evaluated. With \code{"AICmin"} the AIC is used and with \code{"CVmin"} cross-validation is used as a criterion.}
+\item{penalty,penalty.linear}{penalty values for the respective penalty that is not optimized.}
 \item{just.penalty}{logical value indicating whether just the optimal penalty value should be returned or a \code{\link{GAMBoost}} fit performed with this penalty.}
 \item{iter.max}{maximum number of search iterations.}
 \item{upper.margin}{specifies the fraction of \code{maxstepno} which is used as an upper margin in which an AIC/cross-validation minimum is not taken to be one. (Necessary because of random fluctuations of these criteria).}
-\item{trace}{logical value indicating whether information on progress should be printed.}
 \item{parallel}{logical value indicating whether evaluation of cross-validation folds should be performed in parallel
 on a compute cluster, when using \code{method="CVmin"}. This requires library \code{snowfall}.}
+\item{calc.hat,calc.se}{arguments passed to \code{\link{GAMBoost}}.}
+\item{which.penalty}{indicates whether the penalty for the smooth components (value \code{"smoothness"}) or for the linear components (\code{"linear"}) should be optimized.}
+\item{trace}{logical value indicating whether information on progress should be printed.}
 \item{\dots}{miscellaneous parameters for \code{\link{GAMBoost}}.}
 }
 \details{
@@ -47,7 +41,7 @@ giving the values of the criterion (AIC or cross-validation) corresponding to th
 or just the optimal penalty value itself.  
 }
 \author{
-Written by Harald Binder \email{binderh@fdm.uni-freiburg.de}, matching closely the original Fortran implementation employed
+Written by Harald Binder \email{binderh@uni-mainz.de}, matching closely the original Fortran implementation employed
 for Tutz and Binder (2006). 
 }
 \references{
